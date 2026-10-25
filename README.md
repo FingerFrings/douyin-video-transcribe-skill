@@ -50,6 +50,41 @@ This script performs transcription. It:
 - writes `subtitle.srt` and `text.txt`;
 - prints JSON containing language, probability, segment count, and output paths.
 
+## How the agent summarizes
+
+The scripts do not summarize anything — they only produce `subtitle.srt` and `text.txt`. The agent reads the transcript and writes the summary itself, using a fixed template so different agents produce comparable output:
+
+```markdown
+### 视频内容总结
+2–4 sentences describing what the video is about. Prose, no bullets.
+
+### 核心要点
+- 3–6 bullets. Each bullet states one claim the video explicitly makes.
+
+### 提到的工具/产品
+- `名称` — 一句话说明用途
+
+### 操作步骤
+1. Ordered steps — only when the video is a tutorial/walkthrough.
+
+### 识别不确定处
+- `转写原文` → `推测为 …`（依据：标题/上下文）
+
+### 生成文件
+- 视频：`…/video.mp4`
+- 音频：`…/audio.mp3`
+- 字幕：`…/subtitle.srt`
+- 文本：`…/text.txt`
+```
+
+Rules that keep the summary honest:
+
+- Summaries come from `text.txt` only; the video title alone is never enough.
+- `操作步骤` is omitted for non-tutorial videos, and `识别不确定处` is omitted when nothing is uncertain.
+- A garbled name is marked `可能是：XXX` rather than silently corrected.
+- The summary is a digest — the full transcript is not pasted into the answer.
+- If the transcript is empty or unintelligible, the agent says so instead of inventing content.
+
 ## Safety
 
 - Use only for videos the user is allowed to access.

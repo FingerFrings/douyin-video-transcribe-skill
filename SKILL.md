@@ -1,7 +1,7 @@
 ---
 name: douyin-video-transcribe
 description: Transcribe Douyin videos via browser session.
-version: 0.2.0
+version: 0.3.0
 author: Eden Lane, Hermes Agent
 license: MIT
 platforms: [macos, linux]
@@ -120,13 +120,42 @@ PY
    ```
    Completion criterion: `text.txt` and `subtitle.srt` are written.
 
-9. **Summarize from transcript only.**
-   Read `text.txt` and optionally `subtitle.srt`. Produce:
-   - concise summary;
-   - core points;
-   - named tools/products mentioned;
-   - output file paths.
-   Correct obvious ASR errors only when the video title or context makes the correction clear; mention uncertain corrections explicitly.
+9. **Summarize from the transcript only.**
+   Read `text.txt` first; use `subtitle.srt` only to disambiguate names and to locate timestamps. Never summarize from the video title alone, and never add facts that are not in the transcript.
+
+   Output exactly these sections, in this order, in the user's language:
+
+   ```markdown
+   ### 视频内容总结
+   2–4 sentences describing what the video is about. Prose, no bullets.
+
+   ### 核心要点
+   - 3–6 bullets. Each bullet states one claim the video explicitly makes.
+
+   ### 提到的工具/产品
+   - `名称` — 一句话说明用途
+
+   ### 操作步骤
+   1. Ordered steps — only when the video is a tutorial/walkthrough.
+
+   ### 识别不确定处
+   - `转写原文` → `推测为 …`（依据：标题/上下文）
+
+   ### 生成文件
+   - 视频：`…/video.mp4`
+   - 音频：`…/audio.mp3`
+   - 字幕：`…/subtitle.srt`
+   - 文本：`…/text.txt`
+   ```
+
+   Rules for this step:
+   - Omit `操作步骤` when the video is not a tutorial, and omit `识别不确定处` when there are none. Keep every other section.
+   - Mark a name as `可能是：XXX` when ASR likely garbled it; never silently rewrite a name.
+   - Fix an obvious ASR error only when the video title or surrounding context makes the correction unambiguous, and list it under `识别不确定处`.
+   - The summary is a digest, not a transcript replacement — do not paste the full `text.txt`.
+   - Keep file paths out of the summary prose; they belong in `生成文件`.
+   - If `text.txt` is empty or mostly unintelligible, say so plainly and point to the media files. Never invent a summary from the title.
+   - If the user asked only for subtitles or the raw transcript, return the file path and skip this template.
 
 ## Pitfalls
 
